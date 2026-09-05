@@ -1,7 +1,7 @@
 // Design reminder: Human-first Civic Editorial — keep the public experience warm, legible and action-oriented.
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -112,10 +112,19 @@ function RouteMetadataManager() {
 function Router() {
   const [location] = useLocation();
   const routeKey = location.split("?")[0]?.split("#")[0] || "/";
+  // Drop the finished entrance animation so its lingering `transform` doesn't
+  // become a containing block for position:fixed children (back-to-top etc.).
+  const transitionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = transitionRef.current;
+    if (!el) return;
+    el.addEventListener("animationend", () => el.classList.add("route-page-settled"), { once: true });
+    return () => el.classList.remove("route-page-settled");
+  }, [routeKey]);
 
   // make sure to consider if you need authentication for certain routes
   return (
-    <div className="route-page-transition" key={routeKey}>
+    <div className="route-page-transition" key={routeKey} ref={transitionRef}>
       <Suspense fallback={<RouteLoading />}>
         <Switch>
       <Route path={"/"} component={Home} />

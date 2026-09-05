@@ -6,7 +6,7 @@ const appSource = readFileSync(resolve(import.meta.dirname, "../client/src/App.t
 
 describe("route-level code splitting", () => {
   it("keeps the homepage eager while lazy-loading non-home route modules behind a Suspense fallback", () => {
-    expect(appSource).toContain('import { lazy, Suspense, useEffect } from "react";');
+    expect(appSource).toContain('import { lazy, Suspense, useEffect, useRef } from "react";');
     expect(appSource).toContain('import Home from "./pages/Home";');
     expect(appSource).toContain('const MemberSidebarDashboard = lazy(() => import("./pages/MemberSidebarDashboard")');
     expect(appSource).toContain('const MisDashboardPage = lazy(() => import("./pages/MisDashboardPage")');

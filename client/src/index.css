@@ -687,6 +687,9 @@ button { font-family: inherit; }
     transform: translateY(-4px);
   }
   .route-page-transition { animation: aasw-page-enter 300ms cubic-bezier(.23,1,.32,1) both; }
+  /* after the entrance settles, shed the animation so its fill-mode transform
+     stops acting as a containing block for position:fixed descendants */
+  .route-page-settled { animation: none; }
   .route-loading { display: grid; min-height: 62vh; place-items: center; padding: clamp(1.5rem,5vw,4rem); background: #f7f3ea; }
   .route-loading-card { display: grid; width: min(100%, 460px); justify-items: center; gap: .7rem; padding: clamp(2rem,5vw,3.25rem); border: 1px solid rgba(38,29,29,.15); border-bottom: 4px solid #2f6b52; background: #fffaf0; box-shadow: 12px 14px 0 rgba(47,107,82,.1); color: #261d1d; text-align: center; }
   .route-loading-mark { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(208,155,59,.48); border-radius: 50%; }
@@ -1026,3 +1029,55 @@ html { scrollbar-width: thin; scrollbar-color: #cfc4b4 #fffdf7; }
 @keyframes aasw-not-found-drift { to { transform: translate(2.4vw, 3vh) scale(1.06); } }
 @keyframes aasw-not-found-arrive { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .aasw-not-found::before, .aasw-not-found::after, .aasw-not-found-card { animation: none; } .text-link::after { transition: none; } }
+
+/* ─── "Aur tagda" round 2 — motion & micro-interaction upgrades (5 Sep 2026) ──
+   All additive CSS: no layout math changes, everything reduced-motion safe. */
+
+/* 1. Home hero photo: slow cinematic Ken Burns settle on load. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-visual img { animation: aasw-hero-settle 7s cubic-bezier(.23, 1, .32, 1) both; }
+  @keyframes aasw-hero-settle { from { transform: scale(1.09); } to { transform: scale(1); } }
+}
+
+/* 2. Hero avatar stack: soft pop + staggered arrival. */
+@media (prefers-reduced-motion: no-preference) {
+  .avatar-stack .avatar { animation: aasw-avatar-pop 620ms cubic-bezier(.34, 1.56, .64, 1) both; }
+  .avatar-stack .avatar:nth-child(1) { animation-delay: 500ms; }
+  .avatar-stack .avatar:nth-child(2) { animation-delay: 620ms; }
+  .avatar-stack .avatar:nth-child(3) { animation-delay: 740ms; }
+  @keyframes aasw-avatar-pop { from { opacity: 0; transform: translateY(10px) scale(.6); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .avatar-stack:hover .avatar:nth-child(2) { transform: translateX(-3px); }
+  .avatar-stack:hover .avatar:nth-child(3) { transform: translateX(-6px); }
+}
+
+/* 3. FAQ answers: smooth height expand/collapse instead of instant hidden swap.
+   The base .faq-answer keeps `padding: 0 1.05rem 1rem` (layered, line ~898) —
+   collapsed state must also zero the bottom padding or 16px stays visible. */
+.faq-answer { display: grid; grid-template-rows: 0fr; padding: 0 1.05rem 0; transition: grid-template-rows 320ms cubic-bezier(.23, 1, .32, 1), padding 320ms cubic-bezier(.23, 1, .32, 1); }
+.faq-item-open .faq-answer { grid-template-rows: 1fr; padding-bottom: 1rem; }
+.faq-answer > p { overflow: hidden; }
+.faq-answer[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .faq-answer { transition: none; } }
+
+/* 4. Mega menu: links stagger in as the panel opens. */
+@media (prefers-reduced-motion: no-preference) {
+  .about-mega-panel-open .about-mega-group { animation: aasw-mega-item-in 360ms cubic-bezier(.23, 1, .32, 1) both; }
+  .about-mega-panel-open .about-mega-group:nth-child(2) { animation-delay: 60ms; }
+  .about-mega-panel-open .about-mega-group:nth-child(3) { animation-delay: 120ms; }
+  .about-mega-panel-open .about-mega-group:nth-child(4) { animation-delay: 180ms; }
+  @keyframes aasw-mega-item-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+}
+
+/* 5. Footer social links: spring press. */
+.social-links a { transition: transform 200ms cubic-bezier(.34, 1.56, .64, 1), background 180ms ease-out, color 180ms ease-out; }
+.social-links a:hover { transform: translateY(-2px); }
+.social-links a:active { transform: translateY(0) scale(.92); }
+
+/* 6. Home back-to-top (existing .back-to-top button): refined interaction.
+   Lifted ABOVE the floating WhatsApp pill (both bottom-right — the pill is
+   wider, so the diamond sits over it, clear of the pill's copy/text). */
+.back-to-top { bottom: 5.4rem; z-index: 46; transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1), background 180ms ease-out, color 180ms ease-out, box-shadow 220ms ease-out; }
+.back-to-top:hover { box-shadow: 0 10px 28px rgba(38, 29, 29, .2); transform: rotate(-45deg) translateY(-2px); }
+.back-to-top:active { transform: rotate(-45deg) scale(.92); }
+@media (prefers-reduced-motion: reduce) { .back-to-top { transition: none; } }
+

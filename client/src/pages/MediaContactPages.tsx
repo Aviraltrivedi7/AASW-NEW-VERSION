@@ -92,7 +92,7 @@ export function FaqPage() {
             {group.items.map((item, index) => { const id = `${group.id}-${index}`; const open = openId === id; return (
               <article className={`faq-item ${open ? "faq-item-open" : ""}`} key={id}>
                 <button type="button" className="faq-question" onClick={() => setOpenId(open ? null : id)} aria-expanded={open} aria-controls={`faq-panel-${id}`}><span>{item.q}</span><ArrowUpRight size={18} className="faq-chevron" aria-hidden="true" /></button>
-                <div className="faq-answer" id={`faq-panel-${id}`} role="region" aria-label={item.q} hidden={!open}><p>{item.a}</p></div>
+                <div className="faq-answer" id={`faq-panel-${id}`} role="region" aria-label={item.q}><p>{item.a}</p></div>
               </article>
             ); })}
           </div>
